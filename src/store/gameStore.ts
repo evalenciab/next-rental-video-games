@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface Game {
+export interface Game {
     id: string;
     title: string;
     genre: string;
@@ -18,4 +18,5 @@ export const useGameStore = create<GameStore>((set) => ({
     games: [],
     addGame: (game) => set((state) => ({ games: [...state.games, game] })),
     removeGame: (id) => set((state) => ({ games: state.games.filter((g) => g.id !== id) })),
+
 }));
