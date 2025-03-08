@@ -13,9 +13,8 @@ import { v4 as uuidv4 } from "uuid";
 type GameFormData = z.infer<typeof gameSchema>;
 
 export default function AddGameForm() {
-    const { addGame } = useGameStore();
+    //const { addGame } = useGameStore();
     const [error, setError] = useState<string | null>(null);
-
     const {
         register,
         handleSubmit,
@@ -25,11 +24,21 @@ export default function AddGameForm() {
         resolver: zodResolver(gameSchema),
     });
 
-    const onSubmit = (data: GameFormData) => {
+    const onSubmit = async (data: GameFormData) => {
         try {
-            addGame({ id: uuidv4(), ...data, rented: false });
+            //addGame({ id: uuidv4(), ...data, rented: false });
+			const response = await fetch("/api/games", {
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+			console.log(response);
+			if (!response.ok) {
+				throw new Error("Failed to add game");
+			}
+
             reset(); // Clear form after submission
             setError(null);
+			window.location.reload();
         } catch (err) {
             setError("Failed to add game. Please try again.");
             console.error(err);

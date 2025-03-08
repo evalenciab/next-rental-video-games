@@ -1,11 +1,9 @@
-"use client";
-
-import { useGameStore } from "@/store/gameStore";
 import GameCard from "@/components/GameCard";
 import AddGameForm from "@/components/AddGameForm";
+import prisma from "@/lib/prisma";
 
-export default function GamesPage() {
-    const { games } = useGameStore();
+export default async function GamesPage() {
+    const games = await prisma.game.findMany();
 
     return (
         <div>
