@@ -6,6 +6,7 @@ export interface Game {
 	genre: string;
 	price: number;
 	rented: boolean;
+	userId?: string;
 }
 
 interface GameStore {

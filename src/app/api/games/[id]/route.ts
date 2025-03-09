@@ -10,16 +10,21 @@ export async function PATCH(req: Request, {params}: {params: {id: string}}) {
 
 		const {id} = params;
 		const game = await prisma.game.findUnique({where: {id}});
-
+		const user = await prisma.user.findUnique({where: {email: session.user.email}});
+		if (!user) {
+			return NextResponse.json({error: "User not found"}, {status: 404});
+		}
 		if (!game) {
 			return NextResponse.json({error: "Game not found"}, {status: 404});
 		}
+		
 		const updateGame = await prisma.game.update({
 			where: {id},
-			data: {rented: !game.rented, userId: game.rented ? null : session.user.id},
+			data: {rented: !game.rented, userId: game.rented ? null : user.id},
 		});
 		return NextResponse.json(updateGame);
 	} catch (error) {
+		console.error("Failed to update game", error);
 		return NextResponse.json({error: "Failed to update game"}, {status: 500});
 	}
 }

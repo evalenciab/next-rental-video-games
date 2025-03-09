@@ -1,14 +1,18 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+
 import prisma from "@/lib/prisma";
 import GameCard from "@/components/GameCard";
+import { authOptions } from "../api/auth/[...nextauth]/route";
 
 export default async function ProfilePage() {
 	const session = await getServerSession(authOptions);
 	if (!session) return <p>Please log in to see your rented games.</p>
-
+	const user = await prisma.user.findUnique({
+		where: { email: session.user.email },
+	});
+	if (!user) return <p>User not found.</p>
 	const games = await prisma.game.findMany({
-		where: { userId: session.user.id },
+		where: { userId: user.id },
 	});
 
 	return (

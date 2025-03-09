@@ -13,39 +13,34 @@ export default function GameDetails() {
 	const gameId = Array.isArray(id) ? id[0] : id;
 	const { toggleRent } = useGameStore();
 	const [game, setGame] = useState<Game | null>(null);
+	const [loading, setLoading] = useState(true);
 	const { data: session } = useSession();
 
-	const fetchGameData = async (gameId: string | undefined) => {
-		try {
-			if (!gameId) {
-				console.error("No game id provided");
-				return null;
-			}
-			const response = await fetch(`/api/games/${gameId}`, {
-				method: "GET",
-			});
+	useEffect(() => {
+		const fetchGame = async () => {
+			const response = await fetch(`/api/games/${id}`);
+			const data = await response.json();
+			setGame(data);
+			setLoading(false);
+		};
 
-			if (!response.ok) {
-				throw new Error("Failed to fetch game");
-			}
-			const game = await response.json();
-			return game;
-		} catch (error) {
-			console.error("Failed to fetch game data", error);
-			return null;
+		fetchGame();
+	}, [id]);
+
+	const handleRent = async () => {
+		if (!session) return;
+		setLoading(true);
+		const response = await fetch(`/api/games/${id}`, {
+			method: "PATCH",
+		});
+		if (response.ok) {
+			const data = await response.json();
+			setGame(data);
 		}
+		setLoading(false);
 	};
 
-	useEffect(() => {
-		if (gameId) {
-			fetchGameData(gameId).then((data) => {
-				if (data) {
-					setGame(data);
-				}
-			});
-		}
-	}, [gameId]);
-
+	if (loading) return <div>Loading...</div>;
 	if (!game) {
 		return <div>Loading...</div>;
 	}
@@ -60,8 +55,8 @@ export default function GameDetails() {
 			</p>
 			{session ? (
 				<Button
-					onClick={() => toggleRent(game.id)}
-					className={`mt-2 w-full ${
+					onClick={handleRent}
+					className={`mt-4 ${
 						game.rented ? "bg-gray-500" : "bg-green-500"
 					}`}
 				>

@@ -4,13 +4,31 @@ import { Game, useGameStore } from "@/store/gameStore";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface GameCardProps {
 	game: Game;
 }
 
 export default function GameCard({ game }: GameCardProps) {
+	const { data: session } = useSession();
 	const { removeGame, toggleRent } = useGameStore();
+	const router = useRouter();
+	const [loading, setLoading] = useState(false);
+
+	const handleRent = async () => {
+		if (!session) return;
+		setLoading(true);
+		const response = await fetch(`/api/games/${game.id}`, {
+			method: "PATCH",
+		});
+		if (response.ok) {
+			router.refresh();
+		}
+		setLoading(false);
+	};
 	return (
 		<Card className="p-4 flex flex-col gap-2">
 			<h2 className="text-lg font-semibold">{game.title}</h2>
@@ -29,7 +47,7 @@ export default function GameCard({ game }: GameCardProps) {
 				</Button>
 			</div>
 			<Button
-				onClick={() => toggleRent(game.id)}
+				onClick={handleRent}
 				className={`mt-2 w-full ${
 					game.rented ? "bg-gray-500" : "bg-green-500"
 				}`}
