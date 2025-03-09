@@ -1,8 +1,22 @@
 import {NextResponse} from 'next/server';
 import prisma from '@/lib/prisma';
 
-export async function GET() {
-	const games = await prisma.game.findMany();
+export async function GET(req: Request) {
+	const {searchParams} = new URL(req.url);
+	const search = searchParams.get('search') || '';
+	const genre = searchParams.get('genre');
+	const rented = searchParams.get('rented');
+
+	const games = await prisma.game.findMany({
+		where: {
+			title: {
+				contains: search,
+				mode: 'insensitive',
+			},
+			genre: genre || undefined,
+			rented: rented === 'true' ? true : rented === 'false' ? false : undefined,
+		},
+	});
 	return NextResponse.json(games);
 }
 
