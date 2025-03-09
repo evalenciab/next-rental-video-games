@@ -4,6 +4,7 @@ import GameCard from "@/components/GameCard";
 import AddGameForm from "@/components/AddGameForm";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
 	Select,
 	SelectContent,
@@ -13,25 +14,26 @@ import {
   } from "@/components/ui/select"
 import { Button } from "@/components/ui/button";
 
+const fetchGames = async (search: string, genre: string, rented: string) => {
+	const params = new URLSearchParams();
+	if (search) params.append("search", search);
+	if (genre) params.append("genre", genre);
+	if (rented) params.append("rented", rented);
+
+	const response = await fetch(`/api/games?${params.toString()}`);
+	const data = await response.json();
+	return data;
+}
 export default function GamesPage() {
-	const [games, setGames] = useState([]);
+	//const [games, setGames] = useState([]);
 	const [search, setSearch] = useState("");
 	const [genre, setGenre] = useState("");
 	const [rented, setRented] = useState("");
 
-	useEffect(() => {
-		const fetchGames = async () => {
-			const params = new URLSearchParams();
-			if (search) params.append("search", search);
-			if (genre) params.append("genre", genre);
-			if (rented) params.append("rented", rented);
-
-			const response = await fetch(`/api/games?${params.toString()}`);
-			const data = await response.json();
-			setGames(data);
-		}
-		fetchGames();
-	}, [search, genre, rented]);
+	const {data: games = [], isLoading} = useQuery({
+		queryKey: ["games", search, genre, rented],
+		queryFn: () => fetchGames(search, genre, rented)
+	})
     //const games = await prisma.game.findMany();
 
     return (
